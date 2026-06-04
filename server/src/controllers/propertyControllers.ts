@@ -79,9 +79,24 @@ export const getProperties = async (
       );
     }
 
+    // if (amenities && amenities !== "any") {
+    //   const amenitiesArray = (amenities as string).split(",");
+    //   whereConditions.push(Prisma.sql`p.amenities @> ${amenitiesArray}`);
+    // }
     if (amenities && amenities !== "any") {
       const amenitiesArray = (amenities as string).split(",");
-      whereConditions.push(Prisma.sql`p.amenities @> ${amenitiesArray}`);
+
+      const amenityValues = Prisma.join(
+        amenitiesArray.map(
+          amenity => Prisma.sql`${amenity}::"Amenity"`
+        )
+      );
+
+      whereConditions.push(
+        Prisma.sql`
+      p.amenities @> ARRAY[${amenityValues}]
+    `
+      );
     }
 
     if (availableFrom && availableFrom !== "any") {
@@ -94,7 +109,7 @@ export const getProperties = async (
             Prisma.sql`EXISTS (
               SELECT 1 FROM "Lease" l 
               WHERE l."propertyId" = p.id 
-              AND l."startDate" <= ${date.toISOString()}
+             AND l."startDate" <= ${date}
             )`
           );
         }
@@ -133,10 +148,9 @@ export const getProperties = async (
         ) as location
       FROM "Property" p
       JOIN "Location" l ON p."locationId" = l.id
-      ${
-        whereConditions.length > 0
-          ? Prisma.sql`WHERE ${Prisma.join(whereConditions, " AND ")}`
-          : Prisma.empty
+      ${whereConditions.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(whereConditions, " AND ")}`
+        : Prisma.empty
       }
     `;
 
@@ -244,9 +258,9 @@ export const createProperty = async (
     const [longitude, latitude] =
       geocodingResponse.data[0]?.lon && geocodingResponse.data[0]?.lat
         ? [
-            parseFloat(geocodingResponse.data[0]?.lon),
-            parseFloat(geocodingResponse.data[0]?.lat),
-          ]
+          parseFloat(geocodingResponse.data[0]?.lon),
+          parseFloat(geocodingResponse.data[0]?.lat),
+        ]
         : [0, 0];
 
     // create location

@@ -97,4 +97,4 @@ export const updateManager = async (req, res) => {
 //       .json({ message: `Error retrieving manager properties: ${err.message}` });
 //   }
 // };
-//# sourceMappingURL=managerControllers.js.map
+// # sourceMappingURL=managerControllers.js.map

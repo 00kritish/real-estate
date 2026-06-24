@@ -93,6 +93,7 @@ model Property {
   applications Application[]
   favoritedBy  Tenant[]      @relation("TenantFavorites")
   tenants      Tenant[]      @relation("TenantProperties")
+   locationId: createdLocation.id
 }
 
 model Manager {

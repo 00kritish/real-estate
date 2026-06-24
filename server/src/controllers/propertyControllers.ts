@@ -1,8 +1,8 @@
-import type { Request, Response } from "express";
+import { Request, Response } from "express";
 import { PrismaClient, Prisma } from "@prisma/client";
 import { wktToGeoJSON } from "@terraformer/wkt";
 import { S3Client } from "@aws-sdk/client-s3";
-import type { Location } from "@prisma/client";
+import { Location } from "@prisma/client";
 import { Upload } from "@aws-sdk/lib-storage";
 import axios from "axios";
 
@@ -109,7 +109,7 @@ export const getProperties = async (
             Prisma.sql`EXISTS (
               SELECT 1 FROM "Lease" l 
               WHERE l."propertyId" = p.id 
-             AND l."startDate" <= ${date}
+              AND l."startDate" <= ${date.toISOString()}
             )`
           );
         }
@@ -248,11 +248,9 @@ export const createProperty = async (
         limit: "1",
       }
     ).toString()}`;
-
-    // fetching from OpenStreetMap Nominatim API
     const geocodingResponse = await axios.get(geocodingUrl, {
       headers: {
-        "User-Agent": "RealEstateApp (kritishmhrzn123@gmail.com",
+        "User-Agent": "RealEstateApp (justsomedummyemail@gmail.com",
       },
     });
     const [longitude, latitude] =
@@ -274,7 +272,7 @@ export const createProperty = async (
     const newProperty = await prisma.property.create({
       data: {
         ...propertyData,
-        //photoUrls,
+        // photoUrls,
         locationId: location.id,
         managerCognitoId,
         amenities:
